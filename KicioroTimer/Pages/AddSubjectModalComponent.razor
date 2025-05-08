@@ -1,27 +1,34 @@
 @using System.ComponentModel.DataAnnotations
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <EditForm EditContext="@editContext" OnValidSubmit="HandleOnValidSubmit">
     <DataAnnotationsValidator />
 
     <div class="form-group row mb-3">
-        <label class="col-md-2 col-form-label">First Name: <span class="text-danger">*</span></label>
+        <label class="col-md-2 col-form-label">Nazwa: <span class="text-danger">*</span></label>
         <div class="col-md-10">
-            <TextInput @bind-Value="@employee.FirstName" Placeholder="Enter first name" />
-            <ValidationMessage For="@(() => employee.FirstName)" />
+            <TextInput @bind-Value="@subject.Title" />
         </div>
     </div>
 
     <div class="form-group row mb-3">
-        <label class="col-md-2 col-form-label">Last Name: <span class="text-danger">*</span></label>
+        <label class="col-md-2 col-form-label">Dedlajn: <span class="text-danger">*</span></label>
         <div class="col-md-10">
-            <TextInput @bind-Value="@employee.LastName" Placeholder="Enter last name" />
-            <ValidationMessage For="@(() => employee.LastName)" />
+            <DateInput TValue="DateTime" @bind-Value="@subject.ExamDate" EnableMinMax="true" Min="@min" Max="@max"/>
         </div>
     </div>
 
+    <div class="form-group row mb-3">
+        <label class="col-md-2 col-form-label">Czas: <span class="text-danger">*</span></label>
+        <div class="col-md-10">
+            <NumberInput TValue="int" @bind-Value="@subject.TimeForSubjectSet"/>
+        </div>
+    </div>
+
+
     <div class="row">
         <div class="col-md-12 text-right">
-            <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" Class="float-end" @onclick="ResetForm">Reset</Button>
+            <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" Class="float-end">Reset</Button>
             <Button Type="ButtonType.Submit" Color="ButtonColor.Success" Class="float-end me-2">Submit</Button>
         </div>
     </div>
@@ -29,29 +36,32 @@
 </EditForm>
 
 @code {
-    private Employee employee = new();
+
+     [Parameter] public Weather.Subject SubjectToAdd { get; set; }
+     [Parameter] public Weather.SubjectAction Save { get; set; }
+
+    [Parameter] public EventCallback OnClickCallback { get; set; }
+
+
+    private Weather.Subject subject = new();
     private EditContext? editContext;
+    DateTime min = new DateTime(2025,6,1);
+    DateTime max = new DateTime(2025,6,27);
 
     protected override void OnInitialized()
     {
-        editContext = new EditContext(employee);
+        editContext = new EditContext(subject);
         base.OnInitialized();
     }
 
-    public void HandleOnValidSubmit()
+    public async Task HandleOnValidSubmit()
     {
-        // additional check
-        if (editContext.Validate())
-        {
-            // do something
-            // submit the form
-            Console.WriteLine("Form submitted successfully");
-        }
+        Save(subject);
     }
 
     private void ResetForm()
     {
-        employee = new();
-        editContext = new EditContext(employee);
+        subject = new();
+        editContext = new EditContext(subject);
     }
 }

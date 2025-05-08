@@ -1,0 +1,51 @@
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<div class="row">
+    <div class="col-6 col-md-6 text-end">Umiejanie</div>
+    <div class="col-6 col-md-6">@seconds</div>
+    <div class="col-6 col-md-6">@subject.TimeUsed.TotalHours</div>
+</div>
+<div class="row">
+    <div class="col-6 col-md-6 text-end">Żeby się naumiejać :</div>
+    <div class="col-6 col-md-6">@subject.TimeForSubject.TotalHours</div>
+</div>
+<button class="btn btn-primary" @onclick="ToogleLearning">@toogleButtonText</button>
+
+
+@code {
+    [Parameter] public Weather.Subject subject { get; set; }
+    [Parameter] public Weather.SubjectAction Edit { get; set; }
+    private int seconds = 0;
+    private bool learning = true;
+    private string toogleButtonText = "Stop";
+
+    protected override void OnInitialized()
+    {
+        ProceedLearning();
+        base.OnInitialized();
+    }
+
+    private async Task ProceedLearning(){
+
+        while(learning){
+            await Task.Delay(1000);
+            seconds++;
+            if(seconds > 60){
+                seconds = 0;
+                subject.TimeUsed += TimeSpan.FromMinutes(1);
+                await Edit(subject);
+                
+            }
+            StateHasChanged(); 
+        }
+        return;
+    }
+
+     private void ToogleLearning()
+    {
+        learning = learning ? false : true;
+        toogleButtonText = learning ? "Stop" : "Start";
+        ProceedLearning();
+        StateHasChanged(); 
+    }
+}

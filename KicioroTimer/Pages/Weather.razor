@@ -16,14 +16,15 @@
 }
 else
 {
-    <button class="btn btn-primary" @onclick="AddSubject">Add</button>
-    <button class="btn btn-primary" @onclick="ShowSubjectModalComponent">Show</button>
+    <button class="btn btn-primary" @onclick="ShowAddSubjectModalComponent">Add</button>
     <table class="table">
         <thead>
         <tr>
             <th>Tytuł</th>
             <th>Termin</th>
             <th>Naumiejane</th>
+            <th>Więcej</th>
+            <th>Nauka start</th>
         </tr>
         </thead>
         <tbody>
@@ -33,6 +34,10 @@ else
                 <td>@subject.Title</td>
                 <td>@subject.ExamDate.ToString("MM/dd")</td>
                 <td>@subject.TimeUsed.TotalHours</td>
+                <td><button class="btn btn-primary" @onclick="((args) => ShowSubjectModalComponent(args, subject.Title))">Więcej</button></td>
+                <td><button class="btn btn-primary" @onclick="((args) => ShowLearnSubjectModalComponent(args, subject.Title))">Start</button></td>
+                
+
             </tr>
         }
         </tbody>
@@ -42,33 +47,39 @@ else
 @code {
     
     private Modal modal = default!;
-    
-    private async Task ShowSubjectModalComponent()
+    private async Task ShowSubjectModalComponent(EventArgs args, string title)
     {
-        var subject = subjects.FirstOrDefault();
+        var subject = subjects.FirstOrDefault(x => x.Title == title);
         var parameters = new Dictionary<string, object>();
+        SubjectAction delete = DeleteSubject;
+        parameters.Add("Delete", delete);
         parameters.Add("subject", subject);
         await modal.ShowAsync<SubjectModalComponent>(title: subject.Title, parameters: parameters);
+    }
+
+    private async Task ShowLearnSubjectModalComponent(EventArgs args, string title)
+    {
+        var subject = subjects.FirstOrDefault(x => x.Title == title);
+        var parameters = new Dictionary<string, object>();
+        SubjectAction edit = EditSubject;
+        parameters.Add("Edit", edit);
+        parameters.Add("subject", subject);
+        await modal.ShowAsync<LearnSubjectModalComponent>(title: subject.Title, parameters: parameters);
+    }
+
+    private async Task ShowAddSubjectModalComponent()
+    {
+        var parameters = new Dictionary<string, object>();
+        SubjectAction save = SaveSubject;
+        parameters.Add("Save", save);
+        await modal.ShowAsync<AddSubjectModalComponent>(title: "nowy przedmiot", parameters: parameters);
     }
     
     private List<Subject>? subjects;
 
     protected override async Task OnInitializedAsync()
     {
-        subjects = new List<Subject>(); // await localStorage.GetItemAsync<List<Subject>>("subjects");
-        await AddSubject();
-    }
-
-    private async Task AddSubject()
-    {
-        subjects.Add((new Subject()
-        {
-             Title = "Trudny przedmiot",
-             ExamDate = new DateTime(2025,5,10),
-             TimeForSubject = TimeSpan.FromHours(100),
-             TimeUsed = TimeSpan.FromHours(0)
-        }));
-        await localStorage.SetItemAsync("subjects", subjects);
+        subjects = await localStorage.GetItemAsync<List<Subject>>("subjects");
     }
 
     public class Subject
@@ -77,10 +88,49 @@ else
 
         public TimeSpan TimeForSubject { get; set; }
 
+        public int TimeForSubjectSet { get; set; }
+
         public TimeSpan TimeUsed { get; set; }
 
         public DateTime ExamDate { get; set; }
     }
+
+    public delegate Task SubjectAction(Subject subject);
+
+    public async Task SaveSubject(Subject subject)
+    {
+        Console.WriteLine(subject.Title);
+        subjects.Add((new Subject()
+        {
+             Title = subject.Title,
+             ExamDate = subject.ExamDate,
+             TimeForSubject = TimeSpan.FromHours(subject.TimeForSubjectSet),
+     
+             TimeUsed = TimeSpan.FromHours(0)
+        }));
+        await modal.HideAsync();
+        await localStorage.SetItemAsync("subjects", subjects);
+        StateHasChanged();       
+    }
+
+    public async Task DeleteSubject(Subject subject)
+    {
+        Console.WriteLine(subject.Title);
+        var subjectToDelete = subjects.FirstOrDefault(x => x.Title == subject.Title);
+        subjects.Remove(subjectToDelete);
+        await modal.HideAsync();
+        await localStorage.SetItemAsync("subjects", subjects);
+        StateHasChanged();       
+    }
+
+    public async Task EditSubject(Subject subject)
+    {
+        Console.WriteLine(subject.Title);
+        var subjectToEdit = subjects.FirstOrDefault(x => x.Title == subject.Title);
+        subjectToEdit = subject;
+        await localStorage.SetItemAsync("subjects", subjects);      
+    }
+
 
 }
 
