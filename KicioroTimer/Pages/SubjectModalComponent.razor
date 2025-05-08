@@ -4,22 +4,22 @@
 </div>
 <div class="row">
     <div class="col-6 col-md-6 text-end">Żeby się naumiejać :</div>
-    <div class="col-6 col-md-6">@subject.TimeForSubject.TotalHours</div>
+    <div class="col-6 col-md-6">@PrintHelper.PrintTime(subject.TimeForSubject)</div>
 </div>
 <div class="row">
     <div class="col-6 col-md-6 text-end">Naumiejane :</div>
-    <div class="col-6 col-md-6">@subject.TimeUsed.TotalHours</div>
+    <div class="col-6 col-md-6">@PrintHelper.PrintTime(subject.TimeUsed)</div>
 </div>
 <div class="row">
     <div class="col-6 col-md-6 text-end">Do naumiejania  :</div>
-    <div class="col-6 col-md-6">@subject.TimeForSubject.Subtract(subject.TimeUsed).TotalHours</div>
+    <div class="col-6 col-md-6">@PrintHelper.PrintTime(subject.TimeForSubject.Subtract(subject.TimeUsed))</div>
 </div>
 
-<button class="btn btn-primary" @onclick="DeleteOnClick">Delete</button>
+<button class="btn btn-primary" @onclick="DeleteOnClick">Usuń</button>
 
 @code {
-    [Parameter] public Weather.Subject subject { get; set; }
-    [Parameter] public Weather.SubjectAction Delete { get; set; }
+    [Parameter] public Subjects.Subject subject { get; set; }
+    [Parameter] public Subjects.SubjectAction Delete { get; set; }
 
 
     private async Task DeleteOnClick(EventArgs args)

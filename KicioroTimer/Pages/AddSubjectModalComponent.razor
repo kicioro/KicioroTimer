@@ -29,7 +29,7 @@
     <div class="row">
         <div class="col-md-12 text-right">
             <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" Class="float-end">Reset</Button>
-            <Button Type="ButtonType.Submit" Color="ButtonColor.Success" Class="float-end me-2">Submit</Button>
+            <Button Type="ButtonType.Submit" Color="ButtonColor.Success" Class="float-end me-2">Dodaj</Button>
         </div>
     </div>
 
@@ -37,13 +37,13 @@
 
 @code {
 
-     [Parameter] public Weather.Subject SubjectToAdd { get; set; }
-     [Parameter] public Weather.SubjectAction Save { get; set; }
+     [Parameter] public Subjects.Subject SubjectToAdd { get; set; }
+     [Parameter] public Subjects.SubjectAction Save { get; set; }
 
     [Parameter] public EventCallback OnClickCallback { get; set; }
 
 
-    private Weather.Subject subject = new();
+    private Subjects.Subject subject = new();
     private EditContext? editContext;
     DateTime min = new DateTime(2025,6,1);
     DateTime max = new DateTime(2025,6,27);

@@ -1,20 +1,23 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <div class="row">
-    <div class="col-6 col-md-6 text-end">Umiejanie</div>
+    <div class="col-6 col-md-6 text-end">Umiejanie:</div>
     <div class="col-6 col-md-6">@seconds</div>
-    <div class="col-6 col-md-6">@subject.TimeUsed.TotalHours</div>
+</div>
+<div class="row">
+    <div class="col-6 col-md-6 text-end">Naumiejane:</div>
+    <div class="col-6 col-md-6">@PrintHelper.PrintTime(subject.TimeUsed)</div>
 </div>
 <div class="row">
     <div class="col-6 col-md-6 text-end">Żeby się naumiejać :</div>
-    <div class="col-6 col-md-6">@subject.TimeForSubject.TotalHours</div>
+    <div class="col-6 col-md-6">@PrintHelper.PrintTime(subject.TimeForSubject.Subtract(subject.TimeUsed))</div>
 </div>
 <button class="btn btn-primary" @onclick="ToogleLearning">@toogleButtonText</button>
 
 
 @code {
-    [Parameter] public Weather.Subject subject { get; set; }
-    [Parameter] public Weather.SubjectAction Edit { get; set; }
+    [Parameter] public Subjects.Subject subject { get; set; }
+    [Parameter] public Subjects.SubjectAction Edit { get; set; }
     private int seconds = 0;
     private bool learning = true;
     private string toogleButtonText = "Stop";
