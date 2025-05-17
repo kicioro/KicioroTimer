@@ -1,0 +1,109 @@
+@page "/example"
+@inject IWorkerFactory workerFactory
+
+@using BlazorWorker.Core.CoreInstanceService
+@using BlazorWorker.Core
+@using KicioroTimer.Logic
+<div class="row">
+    <div class="col-5 col-xs-12">
+        <input type="text" @bind="iterations" placeholder="iterations" />
+        <br />
+        
+        @progress
+        
+        <button disabled=@RunDisabled @onclick="OnClick" class="btn btn-primary">Run Test</button>
+        <button @onclick="Stop" class="btn btn-primary">Stop</button>
+
+        <button disabled="@disabled" @onclick="OnDispose" class="btn btn-secondary">Dispose Service</button>
+        <br />
+        <br />
+        <strong>Output:</strong>
+        <hr />
+<pre>
+@output
+</pre>
+    </div>
+</div>
+@code {
+    string RunDisabled => Running ? "disabled" : null;
+    bool Running = false;
+    int iterations = 200;
+    int progress = 0;
+    string output;
+    IWorker worker;
+    ICoreInstanceService backgroundService;
+    IInstanceHandle handle;
+    string disabled = "disabled";
+    string rn = Environment.NewLine;
+
+    public async Task Stop(EventArgs _)
+    {
+        await worker.PostMessageAsync("stop");
+        StateHasChanged();
+    }
+    
+    public async Task OnClick(EventArgs _)
+    {
+        output = "";
+
+        try
+        {
+            if (worker == null)
+            {
+                worker = await workerFactory.CreateAsync();
+                worker.IncomingMessage += this.OnWorkerMessage;
+            }
+
+            if (backgroundService == null)
+            {
+                disabled = null;
+                output = $"{rn}{LogDate()} Creating background service...";
+                StateHasChanged();
+                backgroundService = worker.CreateCoreInstanceService();
+                handle = await backgroundService.CreateInstance<CoreCountService>();
+                output += $"{rn}{LogDate()} Background service created.";
+                StateHasChanged();
+            }
+
+            output += $"{rn}{LogDate()} Calling Count({iterations})...";
+            await worker.PostMessageAsync($"{nameof(CountService.Count)}({iterations})");
+        }
+        catch (Exception e)
+        {
+            output = $"{rn}Error = {e}";
+        }
+    }
+
+    public void OnWorkerMessage(object sender, string message)
+    {
+        if (message.StartsWith($"{CoreCountService.Progress}:"))
+        {
+            progress = int.Parse(message.Substring($"{CoreCountService.Progress}:".Length).Trim());
+            StateHasChanged();
+        }
+
+        if (message.StartsWith($"{CoreCountService.ResultMessage}:"))
+        {
+            var result = double.Parse(message.Substring($"{CoreCountService.ResultMessage}:".Length).Trim());
+            output += $"{rn}{LogDate()} Count({iterations}) = {result}";
+            StateHasChanged();
+        }
+    }
+
+    public async Task OnDispose()
+    {
+        await handle.DisposeAsync();
+        backgroundService = null;
+
+
+        await worker.DisposeAsync();
+        worker = null;
+
+        disabled = "disabled";
+    }
+
+    private string LogDate()
+    {
+        return DateTime.Now.ToString("HH:mm:ss:fff");
+    }
+}

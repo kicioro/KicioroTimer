@@ -1,6 +1,9 @@
 ﻿@page "/"
 @inject HttpClient Http
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@using BlazorWorker.BackgroundServiceFactory
+@using BlazorWorker.Core
+@inject IWorkerFactory workerFactory
 
 <PageTitle>Przedmioty</PageTitle>
 
