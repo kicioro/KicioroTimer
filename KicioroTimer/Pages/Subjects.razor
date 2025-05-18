@@ -60,10 +60,7 @@ else
     {
         var subject = subjects.FirstOrDefault(x => x.Id == id);
         if (subject.Learnings == null)
-        {
             subject.Learnings = new List<Learning>();
-            subject.Learnings.Add(new Learning());
-        }
         
         var parameters = new Dictionary<string, object>();
         SubjectAction edit = EditSubject;

@@ -25,7 +25,7 @@
             {
                 <tr>
                     <td>@learning.StartDate</td>
-                    <td>@PrintHelper.PrintLearningTime(learning.StartDate.TimeOfDay.Subtract(learning.EndDate.TimeOfDay))</td>
+                    <td>@PrintHelper.PrintLearningTime(learning.EndDate.TimeOfDay.Subtract(learning.StartDate.TimeOfDay))</td>
                 </tr>
             }
         }
