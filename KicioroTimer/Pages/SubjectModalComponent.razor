@@ -14,6 +14,23 @@
     <div class="col-6 col-md-6 text-end">Do naumiejania  :</div>
     <div class="col-6 col-md-6">@PrintHelper.PrintTime(subject.TimeForSubject.Subtract(subject.TimeUsed))</div>
 </div>
+<div class="row">
+    <table>
+        <tr>
+            <th>Start</th>
+            <th>Czas</th>
+        </tr>
+        @{
+            foreach (var learning in subject.Learnings ?? new List<Subjects.Learning>())
+            {
+                <tr>
+                    <td>@learning.StartDate</td>
+                    <td>@PrintHelper.PrintLearningTime(learning.StartDate.TimeOfDay.Subtract(learning.EndDate.TimeOfDay))</td>
+                </tr>
+            }
+        }
+    </table>
+</div>
 
 <button class="btn btn-primary" @onclick="DeleteOnClick">Usuń</button>
 

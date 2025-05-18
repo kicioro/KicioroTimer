@@ -1,13 +1,7 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
-@using BlazorWorker.BackgroundServiceFactory
-@using BlazorWorker.Core
-@using BlazorWorker.Core.CoreInstanceService
-@using KicioroTimer.Logic
-@inject IWorkerFactory workerFactory
-
 <div class="row">
-    <div class="col-6 col-md-6 text-end">Umiejanie:</div>
-    <div class="col-6 col-md-6">@seconds</div>
+    <div class="col-6 col-md-6 text-end">Umiejanie</div>
+    <progress max="60" value="@seconds" />
 </div>
 <div class="row">
     <div class="col-6 col-md-6 text-end">Naumiejane:</div>
@@ -26,10 +20,7 @@
     private int seconds = 0;
     private bool learning = true;
     private string toogleButtonText = "Stop";
-    
-    private IWorker? worker;
-    private int counter = 0;
-    private bool isRunning = false;
+    private DateTime startTime;
     
     protected override void OnInitialized()
     {
@@ -39,26 +30,39 @@
     }
     
     
-    public async Task ProceedLearning(){
+    
+    public async Task ProceedLearning()
+    {
+        if(!learning)
+            return;
 
-        while(learning){
+        subject.Learnings.Add(new Subjects.Learning());
+        var alreadyLearned = new TimeSpan(subject.TimeUsed.Ticks);
+        startTime = DateTime.Now;
+        while (learning)
+        {
+            var timePased = DateTime.Now.TimeOfDay.Subtract(startTime.TimeOfDay);
+            seconds = timePased.Seconds;
+            subject.TimeUsed = alreadyLearned.Add(timePased);
+            UpdateCurrentLearning(subject);
+            await Edit(subject);
+            StateHasChanged();
             await Task.Delay(1000);
-            seconds++;
-            if(seconds > 60){
-                seconds = 0;
-                subject.TimeUsed += TimeSpan.FromMinutes(1);
-                await Edit(subject);
-                
-            }
-            StateHasChanged(); 
         }
         return;
     }
 
-     private void ToogleLearning()
+    private void UpdateCurrentLearning(Subjects.Subject subject)
+    {
+        var currentLearning = subject.Learnings.Last();
+        currentLearning.StartDate = startTime;
+        currentLearning.EndDate = DateTime.Now;
+    }
+
+    private void ToogleLearning()
     {
         learning = learning ? false : true;
-        toogleButtonText = learning ? "Stop" : "Start";
+        toogleButtonText = learning ? "Stop" : "Start"; 
         ProceedLearning();
         StateHasChanged(); 
     }

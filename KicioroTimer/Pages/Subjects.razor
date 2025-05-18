@@ -9,7 +9,7 @@
 
 <h1>Lista przedmiotów</h1>
 
-<Modal @ref="modal" />
+<Modal @ref="modal" IsScrollable="true"/>
 <button class="btn btn-primary" @onclick="ShowAddSubjectModalComponent">Dodaj</button>
 @if (subjects == null)
 {
@@ -59,6 +59,12 @@ else
     private async Task ShowLearnSubjectModalComponent(EventArgs args, Guid id)
     {
         var subject = subjects.FirstOrDefault(x => x.Id == id);
+        if (subject.Learnings == null)
+        {
+            subject.Learnings = new List<Learning>();
+            subject.Learnings.Add(new Learning());
+        }
+        
         var parameters = new Dictionary<string, object>();
         SubjectAction edit = EditSubject;
         parameters.Add("Edit", edit);
@@ -96,6 +102,14 @@ else
         public TimeSpan TimeUsed { get; set; }
 
         public DateTime ExamDate { get; set; }
+        
+        public List<Learning> Learnings { get; set; }
+    }
+    
+    public class  Learning
+    {
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
     }
 
     public delegate Task SubjectAction(Subject subject);
