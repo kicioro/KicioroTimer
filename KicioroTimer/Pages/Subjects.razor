@@ -1,9 +1,5 @@
 ﻿@page "/"
-@inject HttpClient Http
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
-@using BlazorWorker.BackgroundServiceFactory
-@using BlazorWorker.Core
-@inject IWorkerFactory workerFactory
 
 <PageTitle>Przedmioty</PageTitle>
 
@@ -58,6 +54,11 @@ else
 
     private async Task ShowLearnSubjectModalComponent(EventArgs args, Guid id)
     {
+        await ShowLearnSubjectAsync(id, false);
+    }
+    
+    private async Task ShowLearnSubjectAsync(Guid id, bool continueLearning)
+    {
         var subject = subjects.FirstOrDefault(x => x.Id == id);
         if (subject.Learnings == null)
             subject.Learnings = new List<Learning>();
@@ -66,6 +67,8 @@ else
         SubjectAction edit = EditSubject;
         parameters.Add("Edit", edit);
         parameters.Add("subject", subject);
+        parameters.Add("Continue", continueLearning);
+        await localStorage.SetItemAsync("currentLearningSubject", subject.Id);
         await modal.ShowAsync<LearnSubjectModalComponent>(title: subject.Title, parameters: parameters);
     }
 
@@ -84,6 +87,10 @@ else
         subjects = await localStorage.GetItemAsync<List<Subject>>("subjects");
         if (subjects == null)
             subjects = new List<Subject>();
+        
+        var currentLearningSubjectId = await localStorage.GetItemAsync<Guid?>("currentLearningSubject");
+        if (currentLearningSubjectId.HasValue)
+            await ShowLearnSubjectAsync(currentLearningSubjectId.Value, true);
     }
 
     public class Subject

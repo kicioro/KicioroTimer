@@ -1,4 +1,5 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+
 <div class="row">
     <div class="col-6 col-md-6 text-end">Umiejanie</div>
     <progress max="60" value="@seconds" />
@@ -11,12 +12,17 @@
     <div class="col-6 col-md-6 text-end">Żeby się naumiejać :</div>
     <div class="col-6 col-md-6">@PrintHelper.PrintTime(subject.TimeForSubject.Subtract(subject.TimeUsed))</div>
 </div>
-<button class="btn btn-primary" @onclick="ToogleLearning">@toogleButtonText</button>
+<div class="d-grid gap-2">
+    <Button class="btn btn-primary" Size="ButtonSize.ExtraLarge" @onclick="ToogleLearningAsync">@toogleButtonText</Button>
+</div>
+
 
 
 @code {
     [Parameter] public Subjects.Subject subject { get; set; }
     [Parameter] public Subjects.SubjectAction Edit { get; set; }
+    [Parameter] public bool Continue { get; set; }
+    
     private int seconds = 0;
     private bool learning = true;
     private string toogleButtonText = "Stop";
@@ -24,20 +30,27 @@
     
     protected override void OnInitialized()
     {
-        ProceedLearning();
+        ProceedLearning(Continue);
         base.OnInitialized();
     }
     
     
     
-    public async Task ProceedLearning()
+    public async Task ProceedLearning(bool con = false)
     {
         if(!learning)
             return;
 
-        subject.Learnings.Add(new Subjects.Learning());
+        if (con)
+        {
+            startTime = subject.Learnings.Last().StartDate;
+        }
+        else
+        {
+            subject.Learnings.Add(new Subjects.Learning());
+            startTime = DateTime.Now;
+        }
         var alreadyLearned = new TimeSpan(subject.TimeUsed.Ticks);
-        startTime = DateTime.Now;
         while (learning)
         {
             var timePased = DateTime.Now.TimeOfDay.Subtract(startTime.TimeOfDay);
@@ -58,9 +71,19 @@
         currentLearning.EndDate = DateTime.Now;
     }
 
-    private void ToogleLearning()
+    private async Task ToogleLearningAsync()
     {
-        learning = learning ? false : true;
+        if (learning)
+        {
+            learning = false;
+            await localStorage.SetItemAsync<Guid?>("currentLearningSubject", null);
+        }
+        else
+        {
+            learning = true;
+            await localStorage.SetItemAsync<Guid?>("currentLearningSubject", subject.Id);
+        }
+        
         toogleButtonText = learning ? "Stop" : "Start"; 
         ProceedLearning();
         StateHasChanged(); 
