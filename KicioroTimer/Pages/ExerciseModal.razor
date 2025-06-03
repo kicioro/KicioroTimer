@@ -1,0 +1,85 @@
+
+<div class="full-exercise">
+    
+    <div id="exercise-button" style=@exerciseButtonStyle  @onclick="ButtonClick"></div>
+    
+</div>
+
+
+
+
+
+@code {
+    [Parameter] public EventCallback<MouseEventArgs> HideModal { get; set; }
+
+
+    private void ButtonClick()
+    {
+        HideButton();
+        StartExercise();
+    }
+       
+    string exerciseButtonStyle;
+    
+    protected override void OnInitialized()
+    {
+       StartExercise();
+    }
+
+    private void ChangeButtonPosition(int top, int left)
+    {
+        exerciseButtonStyle = $@"
+    display: block;
+    left: {left}px;
+    top: {top}px;
+
+"; 
+        StateHasChanged();
+    }
+
+    private void HideButton()
+    {
+        exerciseButtonStyle = @"
+    display: none;
+
+"; 
+        StateHasChanged();
+    }
+
+
+    private async Task StartExercise()
+    {
+        Random r = new Random();
+        var delay = r.Next(1000, 5000);
+        await Task.Delay(delay);
+
+        
+            var left = r.Next(0,300);
+            var top = r.Next(0,700);
+            ChangeButtonPosition(top, left);
+
+    }
+
+    
+    
+    
+}
+
+<style>
+    
+.full-exercise{
+    
+    height: 80vh;
+    width: 85vw;
+}
+
+#exercise-button{
+    
+    height: 30px;
+    width: 30px;
+    background-color: blue;
+    position: relative;
+}
+    
+</style>
+

@@ -1,0 +1,35 @@
+﻿@page "/questions"
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<PageTitle>Questions</PageTitle>
+
+<Modal @ref="modal" IsScrollable="true" UseStaticBackdrop="true" CloseOnEscape="false"/>
+<button class="btn btn-primary" @onclick="ShowQuestionModal" Size="ButtonSize.ExtraLarge">Question</button>
+<button class="btn btn-primary" @onclick="ShowExerciseModal" Size="ButtonSize.ExtraLarge">Exercise</button>
+
+@code {
+    
+    private Modal modal = default!;
+    private async Task ShowQuestionModal(EventArgs args)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("HideModal", EventCallback.Factory.Create<MouseEventArgs>(this, HideModal));
+        await modal.ShowAsync<QuestionModal>(title: "Question 1", parameters: parameters);
+    }
+    
+    private async Task ShowExerciseModal(EventArgs args)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("HideModal", EventCallback.Factory.Create<MouseEventArgs>(this, HideModal));
+        await modal.ShowAsync<ExerciseModal>(title: "Exercise 1", parameters: parameters);
+    }
+
+    private void HideModal(MouseEventArgs e)
+    {
+        modal.HideAsync();
+    }
+    
+
+}
+
+
